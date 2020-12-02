@@ -17,9 +17,12 @@ void clock_tick(Clock *clock)
 	clock->ticks[clock->index] = SDL_GetTicks();
 }
 
+size_t clock_dt(Clock *clock)
+{
+	return clock->ticks[clock->index]-clock->ticks[(clock->index+1)%SIZE_TICKS];
+}
+
 size_t clock_fps(Clock *clock)
 {
-	float time = clock->ticks[clock->index] -
-		clock->ticks[(clock->index + 1) % SIZE_TICKS];
-	return (int)(SIZE_TICKS / (time / 1000.f));
+	return (int)(SIZE_TICKS / (clock_dt(clock) / 1000.f));
 }

@@ -13,6 +13,7 @@ typedef struct
 
 Clock *clock_init();
 void   clock_tick(Clock *clock);
+size_t clock_dt(Clock *clock);
 size_t clock_fps(Clock *clock);
 
 #endif /* CLOCK_H_ */

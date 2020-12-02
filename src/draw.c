@@ -52,6 +52,6 @@ void draw_fps(SDL_Renderer *renderer, size_t fps)
 {
 	char text[10];
 	snprintf(text, 10, "%ld", fps);
-	SDL_Point pos = {SCREEN_WIDTH - 50, 0};
+	SDL_Point pos = {SCREEN_WIDTH - 40, 0};
 	draw_text(renderer, font1, &COLOR_BLACK, &pos, text);
 }

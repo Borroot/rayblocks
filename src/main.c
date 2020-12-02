@@ -17,12 +17,12 @@ int main(int argc, char **args)
 
 	SDL_bool quit = SDL_FALSE;
 	while (!quit) {
+		event_process(&quit);
+		clock_tick(clock);
+
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(renderer);
 
-		event_process(&quit);
-
-		clock_tick(clock);
 		draw_fps(renderer, clock_fps(clock));
 
 		SDL_RenderPresent(renderer);
@@ -30,5 +30,6 @@ int main(int argc, char **args)
 
 	free(clock);
 	draw_quit(window, renderer);
+
 	return 0;
 }

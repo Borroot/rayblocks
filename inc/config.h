@@ -3,7 +3,7 @@
 
 #define SCREEN_TITLE  "Rayblocks"
 
-#define SCREEN_WIDTH  640
-#define SCREEN_HEIGHT 480
+#define SCREEN_WIDTH  1200
+#define SCREEN_HEIGHT 800
 
 #endif /* CONFIG_H_ */
