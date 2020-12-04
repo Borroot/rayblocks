@@ -7,6 +7,9 @@
 
 #define FOV 90
 
+#define SPEED_MOVE 5
+#define SPEED_TURN 3
+
 #define CONF_FPS_FONTSIZE 18
 #define CONF_FPS_DRAWRATE 1500
 #define CONF_FPS_TICKSIZE 1000

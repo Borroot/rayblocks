@@ -1,13 +1,12 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <math.h>
-
 #include "clock.h"
 #include "config.h"
-#include "debug.h"
 #include "draw.h"
 #include "event.h"
 #include "level.h"
+#include "render.h"
 #include "state.h"
 
 int main(int argc, char **args)
@@ -28,6 +27,8 @@ int main(int argc, char **args)
 
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(renderer);
+
+		render(renderer, state);
 
 		if (!(clock->count % CONF_FPS_DRAWRATE)) fps = clock_fps(clock);
 		draw_fps(renderer, fps);
