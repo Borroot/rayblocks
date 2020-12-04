@@ -3,12 +3,12 @@
 
 #include <SDL2/SDL.h>
 
-typedef SDL_Point PointI;
+typedef SDL_Point PointI;  /* integer 2d point */
 
 typedef struct
 {
 	float x;
 	float y;
-} PointF;
+} PointF;  /* float 2d point */
 
 #endif /* POINT_H_ */

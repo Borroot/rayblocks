@@ -14,5 +14,6 @@ typedef struct
 } State;
 
 State *state_init(Level *level);
+void   state_quit(State *state);
 
 #endif /* STATE_H_ */

@@ -5,7 +5,7 @@
 #include "point.h"
 
 typedef struct {
-	int **map;      /* the actual map containing cell info */
+	int *map;       /* the actual map containing cell info */
 	size_t w;       /* width  of the map */
 	size_t h;       /* height of the map */
 
@@ -13,7 +13,7 @@ typedef struct {
 	PointI finish;  /* finishing cell of the level */
 } Level;
 
-Level *level_load(const char *file);
+Level *level_load(const char *filename);
 Level *level_generate(size_t width, size_t height);
 
 #endif
