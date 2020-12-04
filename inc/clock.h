@@ -2,14 +2,15 @@
 #define CLOCK_H_
 
 #include <stddef.h>
+#include "config.h"
 
-#define SIZE_TICKS 100
+#define SIZE_TICKS CONF_FPS_TICKSIZE
 
 typedef struct
 {
-	size_t ticks[SIZE_TICKS];
-	size_t index;  /* index of the previous tick */
-	size_t count;
+	size_t ticks[SIZE_TICKS];  /* list of times at which a tick occured */
+	size_t index;              /* index of the previous tick */
+	size_t count;              /* total number of ticks */
 } Clock;
 
 Clock *clock_init();
