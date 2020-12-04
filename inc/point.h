@@ -11,4 +11,6 @@ typedef struct
 	float y;
 } PointF;  /* float 2d point */
 
+void point_rotate(PointF *point, float angle);
+
 #endif /* POINT_H_ */

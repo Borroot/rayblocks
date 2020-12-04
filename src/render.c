@@ -65,6 +65,7 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 		case 4:  color = COLOR_BLUE;   break;
 		default: color = COLOR_YELLOW; break;
 	}
+	if (side) { color.r /= 2; color.g /= 2; color.b /= 2; }
 
 	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 	SDL_RenderDrawLine(renderer, x, line_top, x, line_bot);

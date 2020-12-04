@@ -20,9 +20,9 @@ int main(int argc, char **args)
 	Level *level = level_load("res/maps/map2.txt");
 	State *state = state_init(level);
 
-	SDL_bool quit = SDL_FALSE;
+	int quit = 0;
 	while (!quit) {
-		event_process(&quit);
+		quit = event_process(state, clock_dt(clock));
 		clock_tick(clock);
 
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
