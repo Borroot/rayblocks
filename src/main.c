@@ -1,12 +1,14 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "clock.h"
 #include "config.h"
 #include "debug.h"
 #include "draw.h"
 #include "event.h"
-
+#include "level.h"
+#include "state.h"
 
 int main(int argc, char **args)
 {
@@ -15,6 +17,9 @@ int main(int argc, char **args)
 
 	Clock *clock = clock_init();
 	size_t fps = 0;
+
+	Level *level = level_load("tmp");
+	State *state = state_init(level);
 
 	SDL_bool quit = SDL_FALSE;
 	while (!quit) {
@@ -31,6 +36,8 @@ int main(int argc, char **args)
 	}
 
 	free(clock);
+	free(level);
+	free(state);
 	draw_quit(window, renderer);
 
 	return 0;

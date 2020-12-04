@@ -42,7 +42,7 @@ void draw_quit(SDL_Window *window, SDL_Renderer *renderer)
 }
 
 void draw_text(SDL_Renderer *renderer, TTF_Font *font, const SDL_Color *color,
-		const SDL_Point *pos, const char *text)
+		const PointI *pos, const char *text)
 {
 	SDL_Surface *surface = TTF_RenderText_Blended(font, text, *color);
 	TTF_ERROR_IF(surface == NULL, "TTF surface could not be created.");
