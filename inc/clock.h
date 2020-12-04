@@ -9,6 +9,7 @@ typedef struct
 {
 	size_t ticks[SIZE_TICKS];
 	size_t index;  /* index of the previous tick */
+	size_t count;
 } Clock;
 
 Clock *clock_init();
