@@ -1,13 +1,19 @@
 #include <SDL2/SDL_ttf.h>
+#include "config.h"
 #include "debug.h"
 #include "font.h"
 
-TTF_Font *font_fps;  /* exported in font.h */
+TTF_Font *font_fps;
+
+static void font_init_one(const char *filename, int size, TTF_Font **font)
+{
+	*font = TTF_OpenFont(filename, size);
+	TTF_ERROR_IF(font == NULL, "Font could not be created.");
+}
 
 void font_init()
 {
-	font_fps = TTF_OpenFont(FONT_FILE_FPS, FONT_SIZE_FPS);
-	TTF_ERROR_IF(font_fps == NULL, "font_fps coult not be created.");
+	font_init_one("res/fonts/SansMono-Medium.ttf", FPS_FONTSIZE, &font_fps);
 }
 
 void font_quit()

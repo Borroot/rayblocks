@@ -4,13 +4,12 @@
 #include "debug.h"
 #include "draw.h"
 #include "font.h"
+#include "texture.h"
 
 void draw_init(SDL_Window **window, SDL_Renderer **renderer)
 {
 	SDL_ERROR_IF(SDL_Init(SDL_INIT_VIDEO) < 0, "SDL could not initialize.");
 	SDL_ERROR_IF(TTF_Init() < 0, "TTF could not initialize.");
-
-	font_init();
 
 	*window = SDL_CreateWindow(SCREEN_TITLE, SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT,SDL_WINDOW_SHOWN);
@@ -18,6 +17,9 @@ void draw_init(SDL_Window **window, SDL_Renderer **renderer)
 
 	*renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
 	SDL_ERROR_IF(*renderer == NULL, "Renderer could not be created.");
+
+	font_init();
+	texture_init(*renderer);
 }
 
 void draw_quit(SDL_Window *window, SDL_Renderer *renderer)
@@ -26,6 +28,7 @@ void draw_quit(SDL_Window *window, SDL_Renderer *renderer)
 	SDL_DestroyRenderer(renderer);
 
 	font_quit();
+	texture_quit();
 
 	TTF_Quit();
 	SDL_Quit();
