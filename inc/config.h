@@ -5,13 +5,13 @@
 #define SCREEN_WIDTH  1280
 #define SCREEN_HEIGHT 960
 
-#define FOV 90
+#define FOV 90            /* field of view of the player */
 
-#define SPEED_MOVE 5
-#define SPEED_TURN 4
+#define SPEED_MOVE 5      /* move speed amplifier */
+#define SPEED_TURN 3.5    /* turn speed amplifier */
 
-#define CONF_FPS_FONTSIZE 18
-#define CONF_FPS_DRAWRATE 1500
-#define CONF_FPS_TICKSIZE 1000  /* FIXME Changing this changes dt?! */
+#define FPS_TICKSIZE 10   /* size of clock array (bigger -> more accurate) */
+#define FPS_FONTSIZE 18   /* font size of fps on screen */
+#define FPS_DRAWRATE 500  /* update displayed fps in ms */
 
 #endif /* CONFIG_H_ */

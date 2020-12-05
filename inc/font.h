@@ -3,8 +3,8 @@
 
 #include "config.h"
 
-#define FILE_FONT_FPS "res/fonts/NotoSansMono-Medium.ttf"
-#define SIZE_FONT_FPS CONF_FPS_FONTSIZE
+#define FONT_FILE_FPS "res/fonts/NotoSansMono-Medium.ttf"
+#define FONT_SIZE_FPS FPS_FONTSIZE
 static TTF_Font *font_fps;
 
 #endif /* FONT_H_ */

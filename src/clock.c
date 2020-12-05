@@ -20,13 +20,18 @@ void clock_tick(Clock *clock)
 	clock->count++;
 }
 
-float clock_dt(Clock *clock)
+static float clock_diff(Clock *clock)
 {
 	size_t nextindex = (clock->index + 1) % SIZE_TICKS;
-	return (clock->ticks[clock->index] - clock->ticks[nextindex]) / 1000.f;
+	return clock->ticks[clock->index] - clock->ticks[nextindex];
+}
+
+float clock_dt(Clock *clock)
+{
+	return clock_diff(clock) / SIZE_TICKS;
 }
 
 size_t clock_fps(Clock *clock)
 {
-	return (int)(SIZE_TICKS / clock_dt(clock));
+	return (int)(SIZE_TICKS / (clock_diff(clock) / 1000.f));
 }

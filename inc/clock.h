@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include "config.h"
 
-#define SIZE_TICKS CONF_FPS_TICKSIZE
+#define SIZE_TICKS FPS_TICKSIZE
 
 typedef struct
 {

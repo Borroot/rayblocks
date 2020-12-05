@@ -14,8 +14,9 @@ int main(int argc, char **args)
 	SDL_Window *window = NULL; SDL_Renderer *renderer = NULL;
 	draw_init(&window, &renderer);
 
-	Clock *clock = clock_init();
+	size_t lasttime = SDL_GetTicks();  /* last time the fps was drawn */
 	size_t fps = 0;
+	Clock *clock = clock_init();
 
 	Level *level = level_load("res/maps/map2.txt");
 	State *state = state_init(level);
@@ -30,7 +31,10 @@ int main(int argc, char **args)
 
 		render(renderer, state);
 
-		if (!(clock->count % CONF_FPS_DRAWRATE)) fps = clock_fps(clock);
+		if (SDL_GetTicks() - lasttime > FPS_DRAWRATE) {
+			lasttime = SDL_GetTicks();
+			fps = clock_fps(clock);
+		}
 		draw_fps(renderer, fps);
 
 		SDL_RenderPresent(renderer);

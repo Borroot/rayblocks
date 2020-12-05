@@ -8,7 +8,7 @@
 
 static void fonts_init()
 {
-	font_fps = TTF_OpenFont(FILE_FONT_FPS, SIZE_FONT_FPS);
+	font_fps = TTF_OpenFont(FONT_FILE_FPS, FONT_SIZE_FPS);
 	TTF_ERROR_IF(font_fps == NULL, "font_fps coult not be created.");
 }
 
