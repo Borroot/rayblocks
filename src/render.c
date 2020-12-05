@@ -10,13 +10,13 @@
 
 static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 {
-	float camera_x = 2 * x / (double)SCREEN_WIDTH - 1;  /* x-coord in camera plane */
+	float camera_x = 2 * x / (double)SCREEN_WIDTH - 1;  /* x-coord on plane */
 	PointF ray = {state->dir.x + state->plane.x * camera_x,
 		state->dir.y + state->plane.y * camera_x};  /* ray direction */
 
-	PointI cell = {state->pos.x, state->pos.y};  /* to be: cell which is hit in map */
+	PointI cell = {state->pos.x, state->pos.y};  /* to be: cell hit in map */
 	int side;  /* what side was hit of the wall x = 0 or y = 1 */
-	float wall_dst = collide_ray(state, &ray, &cell, &side);  /* perp dist to wall */
+	float wall_dst = collide_ray(state, &ray, &cell, &side);  /* perp dist */
 
 	int line_height = (int)(SCREEN_HEIGHT / wall_dst);
 	int line_top = MAX(0, -line_height / 2 + SCREEN_HEIGHT / 2);

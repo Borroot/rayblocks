@@ -1,1 +1,6 @@
-typedef int make_compiler_happy;
+#ifndef TEXTURE_H_
+#define TEXTURE_H_
+
+
+
+#endif /* TEXTURE_H_ */
