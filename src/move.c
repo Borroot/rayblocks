@@ -5,6 +5,21 @@
 #include "point.h"
 #include "state.h"
 
+static void turn_exactly(State *state, float angle)
+{
+	point_rotate(&state->dir,   angle);
+	point_rotate(&state->plane, angle);
+}
+
+void turn(State *state, float dt, const int TURN)
+{
+	float angle = dt * SPEED_TURN / 1000.f;
+	if (TURN == TURN_WEST)
+		turn_exactly(state, -angle);
+	else     /* TURN_EAST */
+		turn_exactly(state, angle);
+}
+
 static void move_correctly(State *state, PointF *newpos)
 {
 	int xisfree = 0, yisfree = 0;
@@ -19,12 +34,6 @@ static void move_correctly(State *state, PointF *newpos)
 	if (yisfree) state->pos.y = newpos->y;
 }
 
-static void turn_exactly(State *state, float angle)
-{
-	point_rotate(&state->dir,   angle);
-	point_rotate(&state->plane, angle);
-}
-
 void move(State *state, float dt, const int MOVE)
 {
 	float speed = dt * SPEED_MOVE / 1000.f;
@@ -32,32 +41,22 @@ void move(State *state, float dt, const int MOVE)
 	PointF *pos = &state->pos;
 	PointF *dir = &state->dir;
 
-	if (MOVE == MOVE_NORTH) {
+	if      (MOVE == MOVE_NORTH) {
 		PointF newpos = {pos->x + dir->x * speed, pos->y + dir->y * speed};
 		move_correctly(state, &newpos);
 	}
-	if (MOVE == MOVE_SOUTH) {
+	else if (MOVE == MOVE_SOUTH) {
 		PointF newpos = {pos->x - dir->x * speed, pos->y - dir->y * speed};
 		move_correctly(state, &newpos);
 	}
-	if (MOVE == MOVE_WEST) {
+	else if (MOVE == MOVE_WEST) {
 		turn_exactly(state, -M_PI_2);
-		move(state, dt, MOVE_NORTH);
+		move(state, dt * 0.7, MOVE_NORTH);
 		turn_exactly(state,  M_PI_2);
 	}
-	if (MOVE == MOVE_EAST) {
+	else if (MOVE == MOVE_EAST) {
 		turn_exactly(state,  M_PI_2);
-		move(state, dt, MOVE_NORTH);
+		move(state, dt * 0.7, MOVE_NORTH);
 		turn_exactly(state, -M_PI_2);
-	}
-}
-
-void turn(State *state, float dt, const int TURN)
-{
-	float angle = dt * SPEED_TURN / 1000.f;
-	if (TURN == TURN_WEST) {
-		turn_exactly(state, -angle);
-	} else { /* TURN_EAST */
-		turn_exactly(state, angle);
 	}
 }
