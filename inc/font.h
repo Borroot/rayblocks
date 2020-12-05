@@ -5,6 +5,9 @@
 
 #define FONT_FILE_FPS "res/fonts/NotoSansMono-Medium.ttf"
 #define FONT_SIZE_FPS FPS_FONTSIZE
-static TTF_Font *font_fps;
+extern TTF_Font *font_fps;  /* declared in font.c */
+
+void font_init();
+void font_quit();
 
 #endif /* FONT_H_ */

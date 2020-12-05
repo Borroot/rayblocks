@@ -1,27 +1,16 @@
 #include <SDL2/SDL.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include "config.h"
 #include "debug.h"
 #include "draw.h"
-
-
-static void fonts_init()
-{
-	font_fps = TTF_OpenFont(FONT_FILE_FPS, FONT_SIZE_FPS);
-	TTF_ERROR_IF(font_fps == NULL, "font_fps coult not be created.");
-}
-
-static void fonts_quit()
-{
-	TTF_CloseFont(font_fps);
-}
+#include "font.h"
 
 void draw_init(SDL_Window **window, SDL_Renderer **renderer)
 {
 	SDL_ERROR_IF(SDL_Init(SDL_INIT_VIDEO) < 0, "SDL could not initialize.");
 	SDL_ERROR_IF(TTF_Init() < 0, "TTF could not initialize.");
-	fonts_init();
+
+	font_init();
 
 	*window = SDL_CreateWindow(SCREEN_TITLE, SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT,SDL_WINDOW_SHOWN);
@@ -36,7 +25,8 @@ void draw_quit(SDL_Window *window, SDL_Renderer *renderer)
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
 
-	fonts_quit();
+	font_quit();
+
 	TTF_Quit();
 	SDL_Quit();
 }
