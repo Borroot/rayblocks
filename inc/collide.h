@@ -5,6 +5,6 @@
 #include "state.h"
 
 float collide_ray(State *state, PointF *ray, PointI *cell, int *side);
-int collide_radius(State *state, PointF *pos, float radius);
+int   collide_radius(State *state, PointF *pos, float radius);
 
 #endif /* COLLIDE_H_ */
