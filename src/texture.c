@@ -2,7 +2,18 @@
 #include "debug.h"
 #include "texture.h"
 
+#define FOLDER "res/textures/"
+#define FWALLS FOLDER "walls/"
+
+const char *wallnames[] = {
+	FWALLS "Stone1L.bmp",        FWALLS "Stone1D.bmp",
+	FWALLS "TilesL.bmp",         FWALLS "TilesD.bmp",
+	FWALLS "MultibrickL.bmp",    FWALLS "MultibrickD.bmp",
+	FWALLS "BrownbrickL.bmp",    FWALLS "BrownbrickD.bmp",
+	FWALLS "StoneUWHitlerL.bmp", FWALLS "StoneUWHitlerD.bmp"};
+
 Texture texture_sky;
+Texture texture_walls[sizeof(wallnames) / sizeof(wallnames[0])];
 
 static void texture_init_one(SDL_Renderer *renderer, const char *filename,
 		Texture *texture)
@@ -21,7 +32,10 @@ static void texture_init_one(SDL_Renderer *renderer, const char *filename,
 
 void texture_init(SDL_Renderer *renderer)
 {
-	texture_init_one(renderer, "res/textures/sky.bmp", &texture_sky);
+	texture_init_one(renderer, FOLDER "sky.bmp", &texture_sky);
+
+	for (size_t i = 0; i < sizeof(wallnames) / sizeof(wallnames[0]); i++)
+		texture_init_one(renderer, wallnames[i], texture_walls + i);
 }
 
 void texture_quit()

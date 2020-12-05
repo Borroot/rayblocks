@@ -11,6 +11,7 @@ typedef struct
 } Texture;
 
 extern Texture texture_sky;
+extern Texture texture_walls[];
 
 void texture_init(SDL_Renderer *renderer);
 void texture_quit();

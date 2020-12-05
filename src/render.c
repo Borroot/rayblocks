@@ -36,8 +36,21 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 	SDL_RenderDrawLine(renderer, x, line_top, x, line_bot);
 }
 
+static void render_floor(SDL_Renderer *renderer, State *state)
+{
+
+}
+
+static void render_sky(SDL_Renderer *renderer, State *state)
+{
+
+}
+
 void render(SDL_Renderer *renderer, State *state)
 {
+	render_floor(renderer, state);
+	render_sky(renderer, state);
+
 	for (size_t x = 0; x < SCREEN_WIDTH; x++)
 		render_line(renderer, state, x);
 }
