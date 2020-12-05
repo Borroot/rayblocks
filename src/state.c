@@ -11,7 +11,7 @@ State *state_init(Level *level)
 	State *state = malloc(sizeof(State));
 	ERROR_IF(state == NULL, "State pointer could not be created.");
 
-	PointF pos   = {level->start.x, level->start.y};
+	PointF pos   = {level->start.x + 0.5, level->start.y + 0.5};
 	PointF dir   = {1, 0};
 	PointF plane = {0, atan((FOV / 2.0) * M_PI / 180.0)};
 

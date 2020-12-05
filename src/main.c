@@ -18,23 +18,24 @@ int main(int argc, char **args)
 	size_t fps = 0;
 	Clock *clock = clock_init();
 
-	Level *level = level_load("res/maps/map2.txt");
-	State *state = state_init(level);
+	State *state = state_init(level_load("res/maps/map2.txt"));
 
 	int quit = 0;
 	while (!quit) {
+		/* UPDATE */
 		quit = event_process(state, clock_dt(clock));
 		clock_tick(clock);
-
-		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-		SDL_RenderClear(renderer);
-
-		render(renderer, state);
 
 		if (SDL_GetTicks() - lasttime > FPS_DRAWRATE) {
 			lasttime = SDL_GetTicks();
 			fps = clock_fps(clock);
 		}
+
+		/* DRAW */
+		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+		SDL_RenderClear(renderer);
+
+		render(renderer, state);
 		draw_fps(renderer, fps);
 
 		SDL_RenderPresent(renderer);
