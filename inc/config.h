@@ -21,7 +21,10 @@
 #define KEY_MOVE_EAST  SDL_SCANCODE_D
 #define KEY_TURN_WEST  SDL_SCANCODE_J
 #define KEY_TURN_EAST  SDL_SCANCODE_K
-#define KEY_QUIT       SDLK_q  /* quit the program */
-#define KEY_FLOOR      SDLK_f  /* toggle floor rendering */
+
+#define KEY_QUIT  SDLK_q  /* quit the program */
+#define KEY_FLOOR SDLK_f  /* toggle floor rendering */
+
+#define PIXELFORMAT SDL_PIXELFORMAT_ARGB8888  /* pixel format for surfaces */
 
 #endif /* CONFIG_H_ */

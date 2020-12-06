@@ -8,6 +8,7 @@ typedef struct
 	SDL_Texture *img;  /* actual texture */
 	size_t w;   /* width  of the texture */
 	size_t h;   /* height of the texture */
+	SDL_Surface *surf;  /* texture surface (useful for direct pixel access) */
 } Texture;
 
 extern Texture texture_walls[];

@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include "config.h"
 #include "collide.h"
 #include "color.h"
@@ -12,6 +13,9 @@
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
+SDL_Texture *floor_texture;
+uint32_t *floor_pixels;
 
 static void render_line_wall(SDL_Renderer *renderer, State *state, size_t x)
 {
@@ -65,17 +69,31 @@ static void render_line_floor(SDL_Renderer *renderer, State *state, size_t y)
 		floor.x += step.x;
 		floor.y += step.y;
 
-		SDL_Rect srcrect = {texel.x, texel.y, 1, 1};
-		SDL_Rect dstrect = {x, y, 1, 1};
-		SDL_RenderCopy(renderer, texture->img, &srcrect, &dstrect);
+		texel.x = MAX(0, texel.x);
+		texel.y = MAX(0, texel.y);
+
+		floor_pixels[SCREEN_WIDTH * (y - SCREEN_HEIGHT / 2 - 1) + x] =
+			((uint32_t*)texture->surf->pixels)[texture->w * texel.y + texel.x];
 	}
 }
 
-static void render_floor(SDL_Renderer *renderer)
+static void render_floor(SDL_Renderer *renderer, State *state)
 {
-	SDL_SetRenderDrawColor(renderer,COLOR_GREY.r,COLOR_GREY.g,COLOR_GREY.b,0);
-	SDL_Rect rect = {0, SCREEN_HEIGHT/2 + 1, SCREEN_WIDTH, SCREEN_HEIGHT/2};
-	SDL_RenderFillRect(renderer, &rect);
+	if (state->floor) {
+		for (size_t y = SCREEN_HEIGHT / 2 + 1; y <= SCREEN_HEIGHT; y++)
+			render_line_floor(renderer, state, y);
+
+		SDL_UpdateTexture(floor_texture, NULL, floor_pixels, SCREEN_WIDTH *
+			sizeof(*floor_pixels));
+
+		SDL_Rect dstrect = {0, SCREEN_HEIGHT/2, SCREEN_WIDTH, SCREEN_HEIGHT/2};
+		SDL_RenderCopy(renderer, floor_texture, NULL, &dstrect);
+	} else {
+		SDL_SetRenderDrawColor(renderer, COLOR_GREY.r, COLOR_GREY.g,
+			COLOR_GREY.b, 0);
+		SDL_Rect rect = {0, SCREEN_HEIGHT/2+1, SCREEN_WIDTH, SCREEN_HEIGHT/2};
+		SDL_RenderFillRect(renderer, &rect);
+	}
 }
 
 static void render_sky(SDL_Renderer *renderer, State *state)
@@ -112,13 +130,25 @@ static void render_sky(SDL_Renderer *renderer, State *state)
 void render(SDL_Renderer *renderer, State *state)
 {
 	render_sky(renderer, state);
-
-	if (state->floor)
-		for (size_t y = SCREEN_HEIGHT / 2 + 1; y <= SCREEN_HEIGHT; y++)
-			render_line_floor(renderer, state, y);
-	else
-		render_floor(renderer);
+	render_floor(renderer, state);
 
 	for (size_t x = 0; x < SCREEN_WIDTH; x++)
 		render_line_wall(renderer, state, x);
+}
+
+void render_init(SDL_Renderer *renderer)
+{
+	floor_texture = SDL_CreateTexture(renderer, PIXELFORMAT,
+		SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
+	SDL_ERROR_IF(floor_texture == NULL, "Could not create floor_texture.");
+
+	floor_pixels = malloc(SCREEN_WIDTH * (SCREEN_HEIGHT / 2 + 1) *
+		sizeof(*floor_pixels));
+	ERROR_IF(floor_pixels == NULL, "Could not malloc floor_pixels array.");
+}
+
+void render_quit()
+{
+	SDL_DestroyTexture(floor_texture);
+	free(floor_pixels);
 }

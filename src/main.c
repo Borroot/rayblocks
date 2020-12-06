@@ -11,7 +11,7 @@
 
 int main(int argc, char **args)
 {
-	SDL_Window *window = NULL; SDL_Renderer *renderer = NULL;
+	SDL_Window *window; SDL_Renderer *renderer;
 	draw_init(&window, &renderer);
 
 	size_t lasttime = SDL_GetTicks();  /* last time the fps was drawn */

@@ -5,6 +5,7 @@
 #include "draw.h"
 #include "font.h"
 #include "texture.h"
+#include "render.h"
 
 void draw_init(SDL_Window **window, SDL_Renderer **renderer)
 {
@@ -20,6 +21,7 @@ void draw_init(SDL_Window **window, SDL_Renderer **renderer)
 
 	font_init();
 	texture_init(*renderer);
+	render_init(*renderer);
 }
 
 void draw_quit(SDL_Window *window, SDL_Renderer *renderer)
@@ -29,6 +31,7 @@ void draw_quit(SDL_Window *window, SDL_Renderer *renderer)
 
 	font_quit();
 	texture_quit();
+	render_quit();
 
 	TTF_Quit();
 	SDL_Quit();
