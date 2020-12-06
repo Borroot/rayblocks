@@ -52,12 +52,11 @@ static void render_line_floor(SDL_Renderer *renderer, State *state, size_t y)
 		dst * (rayr.y - rayl.y) / SCREEN_WIDTH};
 	PointF floor = {state->pos.x + dst * rayl.x, state->pos.y + dst * rayl.y};
 
+	/* writing every single pixel is extremely slow (not accelerated by gpu) */
 	for (size_t x = 0; x < SCREEN_WIDTH; x++) {
 		PointI cell = {floor.x, floor.y};
 
-		size_t index = abs(state->level->map[state->level->w*cell.y+cell.x]);
 		Texture texture = texture_floors[0];
-
 		PointI texel = {texture.w*(floor.x-cell.x),texture.h*(floor.y-cell.y)};
 
 		floor.x += step.x;
