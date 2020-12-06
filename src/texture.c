@@ -41,7 +41,7 @@ void texture_init(SDL_Renderer *renderer)
 	for (size_t i = 0; i < sizeof(wallnames) / sizeof(wallnames[0]); i++)
 		texture_init_one(renderer, wallnames[i], texture_walls + i);
 
-	texture_init_one(renderer, FOLDER "sky.bmp", &texture_sky);
+	texture_init_one(renderer, FOLDER "skies/sky.bmp", &texture_sky);
 
 	for (size_t i = 0; i < sizeof(floornames) / sizeof(floornames[0]); i++)
 		texture_init_one(renderer, floornames[i], texture_floors + i);
