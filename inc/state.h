@@ -10,7 +10,7 @@ typedef struct
 	PointF pos;    /* current position of the player */
 	PointF dir;    /* direction the player is looking into as vector */
 	PointF plane;  /* right point of the camera plane relative to dir */
-
+	int floor;     /* boolean to indicate if floor is to be rendered */
 } State;
 
 State *state_init(Level *level);

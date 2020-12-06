@@ -84,12 +84,11 @@ void render(SDL_Renderer *renderer, State *state)
 {
 	render_sky(renderer, state);
 
-	#if RENDER_FLOOR
-	for (size_t y = SCREEN_HEIGHT / 2 + 1; y <= SCREEN_HEIGHT; y++)
-		render_line_floor(renderer, state, y);
-	#else
-	render_floor(renderer);
-	#endif
+	if (state->floor)
+		for (size_t y = SCREEN_HEIGHT / 2 + 1; y <= SCREEN_HEIGHT; y++)
+			render_line_floor(renderer, state, y);
+	else
+		render_floor(renderer);
 
 	for (size_t x = 0; x < SCREEN_WIDTH; x++)
 		render_line_wall(renderer, state, x);

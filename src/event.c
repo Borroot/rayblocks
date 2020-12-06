@@ -23,7 +23,7 @@ static void event_move(State *state, float dt)
 		turn(state, dt, TURN_EAST);
 }
 
-static int event_general()
+static int event_general(State *state)
 {
 	SDL_Event e;
 	while (SDL_PollEvent(&e) != 0) {
@@ -33,6 +33,9 @@ static int event_general()
 			switch (e.key.keysym.sym) {
 				case KEY_QUIT:
 					return 1;
+				case KEY_FLOOR:
+					state->floor = !state->floor;
+					break;
 			}
 		}
 	}
@@ -41,7 +44,7 @@ static int event_general()
 
 int event_process(State *state, float dt)
 {
-	if (event_general()) return 1;
+	if (event_general(state)) return 1;
 	event_move(state, dt);
 	return 0;
 }

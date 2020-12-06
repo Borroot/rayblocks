@@ -22,7 +22,6 @@
 #define KEY_TURN_WEST  SDL_SCANCODE_J
 #define KEY_TURN_EAST  SDL_SCANCODE_K
 #define KEY_QUIT       SDLK_q  /* quit the program */
-
-#define RENDER_FLOOR 0  /* draw the pretty but slow floor yes or no */
+#define KEY_FLOOR      SDLK_f  /* toggle floor rendering */
 
 #endif /* CONFIG_H_ */
