@@ -69,6 +69,13 @@ static void render_line_floor(SDL_Renderer *renderer, State *state, size_t y)
 	}
 }
 
+static void render_floor(SDL_Renderer *renderer)
+{
+	SDL_SetRenderDrawColor(renderer,COLOR_GREY.r,COLOR_GREY.g,COLOR_GREY.b,0);
+	SDL_Rect rect = {0, SCREEN_HEIGHT/2 + 1, SCREEN_WIDTH, SCREEN_HEIGHT/2};
+	SDL_RenderFillRect(renderer, &rect);
+}
+
 static void render_sky(SDL_Renderer *renderer, State *state)
 {
 
@@ -78,8 +85,12 @@ void render(SDL_Renderer *renderer, State *state)
 {
 	render_sky(renderer, state);
 
+	#if RENDER_FLOOR
 	for (size_t y = SCREEN_HEIGHT / 2 + 1; y <= SCREEN_HEIGHT; y++)
 		render_line_floor(renderer, state, y);
+	#else
+	render_floor(renderer);
+	#endif
 
 	for (size_t x = 0; x < SCREEN_WIDTH; x++)
 		render_line_wall(renderer, state, x);

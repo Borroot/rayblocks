@@ -6,7 +6,7 @@ SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
 INC_FILES = $(wildcard $(INC_DIR)/*.h)
 OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_FILES))
 
-EXTRAS = -g -Wno-unused-parameter -Wno-unused-variable -Wno-empty-body
+EXTRAS = -g -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function
 SFLAGS = $(shell sdl2-config --cflags) -lSDL2_ttf
 CFLAGS = $(SFLAGS) $(EXTRAS) -Wall -Wextra -Werror -pedantic
 IFLAGS = -I $(INC_DIR)

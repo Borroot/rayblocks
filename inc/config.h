@@ -23,4 +23,6 @@
 #define KEY_TURN_EAST  SDL_SCANCODE_K
 #define KEY_QUIT       SDLK_q  /* quit the program */
 
+#define RENDER_FLOOR 0  /* draw the pretty but slow floor yes or no */
+
 #endif /* CONFIG_H_ */
