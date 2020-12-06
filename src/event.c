@@ -33,9 +33,6 @@ static int event_general(State *state)
 			switch (e.key.keysym.sym) {
 				case KEY_QUIT:
 					return 1;
-				case KEY_FLOOR:
-					state->floor = !state->floor;
-					break;
 			}
 		}
 	}

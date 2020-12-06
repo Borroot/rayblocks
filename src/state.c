@@ -19,7 +19,6 @@ State *state_init(Level *level)
 	state->pos = pos;
 	state->dir = dir;
 	state->plane = plane;
-	state->floor = 0;
 	return state;
 }
 

@@ -79,21 +79,14 @@ static void render_line_floor(SDL_Renderer *renderer, State *state, size_t y)
 
 static void render_floor(SDL_Renderer *renderer, State *state)
 {
-	if (state->floor) {
-		for (size_t y = SCREEN_HEIGHT / 2 + 1; y <= SCREEN_HEIGHT; y++)
-			render_line_floor(renderer, state, y);
+	for (size_t y = SCREEN_HEIGHT / 2 + 1; y <= SCREEN_HEIGHT; y++)
+		render_line_floor(renderer, state, y);
 
-		SDL_UpdateTexture(floor_texture, NULL, floor_pixels, SCREEN_WIDTH *
-			sizeof(*floor_pixels));
+	SDL_UpdateTexture(floor_texture, NULL, floor_pixels, SCREEN_WIDTH *
+		sizeof(*floor_pixels));
 
-		SDL_Rect dstrect = {0, SCREEN_HEIGHT/2, SCREEN_WIDTH, SCREEN_HEIGHT/2};
-		SDL_RenderCopy(renderer, floor_texture, NULL, &dstrect);
-	} else {
-		SDL_SetRenderDrawColor(renderer, COLOR_GREY.r, COLOR_GREY.g,
-			COLOR_GREY.b, 0);
-		SDL_Rect rect = {0, SCREEN_HEIGHT/2+1, SCREEN_WIDTH, SCREEN_HEIGHT/2};
-		SDL_RenderFillRect(renderer, &rect);
-	}
+	SDL_Rect dstrect = {0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2};
+	SDL_RenderCopy(renderer, floor_texture, NULL, &dstrect);
 }
 
 static void render_sky(SDL_Renderer *renderer, State *state)
