@@ -94,7 +94,7 @@ static void render_sky(SDL_Renderer *renderer, State *state)
 	Texture *texture = &texture_sky;
 
 	size_t texture_width = (2 * texture->h * SCREEN_WIDTH) / SCREEN_HEIGHT;
-	ERROR_IF(texture_width > SCREEN_WIDTH, "Sky texture not wide enough.");
+	ERROR_IF(texture_width > texture->w, "Sky texture not wide enough.");
 
 	float angle = 2 * M_PI - (atan2f(state->dir.x, state->dir.y) + M_PI);
 	size_t offset = angle / (2 * M_PI) * texture->w;  /* offset in texture */
