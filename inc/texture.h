@@ -11,9 +11,9 @@ typedef struct
 	SDL_Surface *surf;  /* texture surface (useful for direct pixel access) */
 } Texture;
 
-extern Texture texture_walls[];
 extern Texture texture_sky;
-extern Texture texture_floors[];
+extern Texture texture_walls[];
+extern Texture texture_floorceil[];
 
 void texture_init(SDL_Renderer *renderer);
 void texture_quit();

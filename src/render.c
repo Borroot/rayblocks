@@ -17,6 +17,9 @@
 SDL_Texture *floor_texture;
 uint32_t *floor_pixels;
 
+SDL_Texture *ceil_texture;
+uint32_t *ceil_pixels;
+
 static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 {
 	float camera_x = 2 * x / (double)SCREEN_WIDTH - 1;  /* x-coord on plane */
@@ -63,6 +66,9 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 	for (int y = SCREEN_HEIGHT / 2 + 1; y < MIN(line_end,SCREEN_HEIGHT); y++)
 		floor_pixels[SCREEN_WIDTH * (y - SCREEN_HEIGHT / 2 - 1) + x] = 0;
 
+	for (int y = MAX(0, line_top); y < SCREEN_HEIGHT / 2; y++)
+		ceil_pixels[SCREEN_WIDTH * y + x] = 0;
+
 	/* draw the floor pixels per y value starting from where the wall stops */
 	for (size_t y = line_end; y < SCREEN_HEIGHT; y++)
 	{
@@ -75,16 +81,27 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 
 		/* retrieve the texture from the floor tile we are currently drawing */
 		size_t index = state->level->w * (int)floor.y + (int)floor.x;
-		size_t texnum = state->level->map_floor[index];
-		Texture *texture = &texture_floors[texnum];
+		size_t texnum = state->level->map_floor[index] - 1;
+		Texture *texture = &texture_floorceil[texnum];
 
 		/* calculate the texture pixel (texel) which is to be drawn at (x,y) */
 		PointI texel = {(int)(floor.x * texture->w) % texture->w,
 			            (int)(floor.y * texture->h) % texture->h};
 
+		int drawy = y - SCREEN_HEIGHT / 2 - 1;  /* y pos in pixel array */
+
 		/* update the pixel in the pixel array to the pixel from the texture */
-		floor_pixels[SCREEN_WIDTH * (y - SCREEN_HEIGHT / 2 - 1) + x] =
+		floor_pixels[SCREEN_WIDTH * drawy + x] =
 			((uint32_t*)texture->surf->pixels)[texture->w * texel.y + texel.x];
+
+		texnum = state->level->map_ceiling[index];
+		if (texnum == 0)
+			ceil_pixels[SCREEN_WIDTH * (SCREEN_HEIGHT / 2 - drawy) + x] = 0;
+		else {
+			texture = &texture_floorceil[texnum] - 1;
+			ceil_pixels[SCREEN_WIDTH * (SCREEN_HEIGHT / 2 - drawy) + x] =
+				((uint32_t*)texture->surf->pixels)[texture->w*texel.y+texel.x];
+		}
 	}
 }
 
@@ -93,12 +110,17 @@ static void render_wall_and_floor(SDL_Renderer *renderer, State *state)
 	for (size_t x = 0; x < SCREEN_WIDTH; x++)
 		render_line(renderer, state, x);  /* update every vertical line */
 
-	/* push the updates for the floor to the screen from the pixel array */
+	/* push updates for floor and ceiling to the screen from pixel arrays */
 	SDL_UpdateTexture(floor_texture, NULL, floor_pixels, SCREEN_WIDTH *
 		sizeof(*floor_pixels));
+	SDL_UpdateTexture(ceil_texture, NULL, ceil_pixels, SCREEN_WIDTH *
+		sizeof(*ceil_pixels));
 
-	SDL_Rect dstrect = {0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2};
-	SDL_RenderCopy(renderer, floor_texture, NULL, &dstrect);
+	SDL_Rect dstrect1 = {0, SCREEN_HEIGHT/2, SCREEN_WIDTH, SCREEN_HEIGHT/2};
+	SDL_RenderCopy(renderer, floor_texture, NULL, &dstrect1);
+
+	SDL_Rect dstrect2 = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT / 2};
+	SDL_RenderCopy(renderer, ceil_texture, NULL, &dstrect2);
 }
 
 static void render_sky(SDL_Renderer *renderer, State *state)
@@ -138,18 +160,25 @@ void render(SDL_Renderer *renderer, State *state)
 	render_wall_and_floor(renderer, state);
 }
 
+static void render_init_floorceil(SDL_Renderer *renderer,
+		SDL_Texture **texture, uint32_t **pixels)
+{
+	*texture = SDL_CreateTexture(renderer, PIXELFORMAT,
+		SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
+	SDL_ERROR_IF(*texture == NULL, "Could not create texture.");
+
+	int result = SDL_SetTextureBlendMode(*texture, SDL_BLENDMODE_BLEND);
+	SDL_ERROR_IF(result < 0, "Could not set blend mode for texture.");
+
+	size_t len = SCREEN_WIDTH * (SCREEN_HEIGHT/2 + 1) * sizeof(**pixels);
+	*pixels = malloc(len);
+	ERROR_IF(*pixels == NULL, "Could not malloc pixels array.");
+}
+
 void render_init(SDL_Renderer *renderer)
 {
-	floor_texture = SDL_CreateTexture(renderer, PIXELFORMAT,
-		SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
-	SDL_ERROR_IF(floor_texture == NULL, "Could not create floor_texture.");
-
-	int result = SDL_SetTextureBlendMode(floor_texture, SDL_BLENDMODE_BLEND);
-	SDL_ERROR_IF(result < 0, "Could not set blend mode for floor_texture.");
-
-	size_t len = SCREEN_WIDTH * (SCREEN_HEIGHT/2 + 1) * sizeof(*floor_pixels);
-	floor_pixels = malloc(len);
-	ERROR_IF(floor_pixels == NULL, "Could not malloc floor_pixels array.");
+	render_init_floorceil(renderer, &floor_texture, &floor_pixels);
+	render_init_floorceil(renderer, &ceil_texture, &ceil_pixels);
 }
 
 void render_quit()

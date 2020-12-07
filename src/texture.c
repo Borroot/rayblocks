@@ -4,9 +4,9 @@
 #include "debug.h"
 #include "texture.h"
 
-#define FOLDER  "res/textures/"
-#define WALLS   FOLDER "walls/"
-#define FLOORS  FOLDER "floors/"
+#define FOLDER    "res/textures/"
+#define WALLS     FOLDER "walls/"
+#define FLOORCEIL FOLDER "floorceil/"
 
 /* texture files for the walls */
 const char *wallnames[] = {
@@ -17,14 +17,14 @@ const char *wallnames[] = {
 	WALLS "BookshelfL.bmp",     WALLS "BookshelfD.bmp",
 	WALLS "StoneUWHitlerL.bmp", WALLS "StoneUWHitlerD.bmp"};
 
-/* texture files for the floors */
-const char *floornames[] = {
-	FLOORS "Hexbrown1.bmp", FLOORS "Hexbrown2.bmp", FLOORS "Hexbrown3.bmp",
-	FLOORS "Woodherring2.bmp"};
+/* texture files for the floor and the ceiling */
+const char *floorceilnames[] = {
+	FLOORCEIL "Hexbrown1.bmp", FLOORCEIL "Hexbrown2.bmp",
+	FLOORCEIL "Hexbrown3.bmp", FLOORCEIL "Woodherring2.bmp"};
 
-Texture texture_walls[sizeof(wallnames) / sizeof(wallnames[0])];
 Texture texture_sky;
-Texture texture_floors[sizeof(floornames) / sizeof(floornames[0])];
+Texture texture_walls[sizeof(wallnames) / sizeof(*wallnames)];
+Texture texture_floorceil[sizeof(floorceilnames) / sizeof(*floorceilnames)];
 
 static void texture_init_one(SDL_Renderer *renderer, const char *filename,
 		Texture *texture, int keepsurface)
@@ -49,24 +49,24 @@ static void texture_init_one(SDL_Renderer *renderer, const char *filename,
 
 void texture_init(SDL_Renderer *renderer)
 {
+	texture_init_one(renderer, FOLDER "skies/sky.bmp", &texture_sky, 0);
+
 	for (size_t i = 0; i < sizeof(wallnames) / sizeof(wallnames[0]); i++)
 		texture_init_one(renderer, wallnames[i], texture_walls + i, 0);
 
-	texture_init_one(renderer, FOLDER "skies/sky.bmp", &texture_sky, 0);
-
-	for (size_t i = 0; i < sizeof(floornames) / sizeof(floornames[0]); i++)
-		texture_init_one(renderer, floornames[i], texture_floors + i, 1);
+	for (size_t i = 0; i < sizeof(floorceilnames)/sizeof(*floorceilnames); i++)
+		texture_init_one(renderer, floorceilnames[i], texture_floorceil+i, 1);
 }
 
 void texture_quit()
 {
+	SDL_DestroyTexture(texture_sky.img);
+
 	for (size_t i = 0; i < sizeof(wallnames) / sizeof(wallnames[0]); i++)
 		SDL_DestroyTexture(texture_walls[i].img);
 
-	SDL_DestroyTexture(texture_sky.img);
-
-	for (size_t i = 0; i < sizeof(floornames) / sizeof(floornames[0]); i++) {
-		SDL_DestroyTexture(texture_floors[i].img);
-		SDL_FreeSurface(texture_floors[i].surf);
+	for (size_t i = 0; i<sizeof(floorceilnames)/sizeof(*floorceilnames); i++) {
+		SDL_DestroyTexture(texture_floorceil[i].img);
+		SDL_FreeSurface(texture_floorceil[i].surf);
 	}
 }
