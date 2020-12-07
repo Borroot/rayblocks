@@ -13,7 +13,7 @@ void draw_init(SDL_Window **window, SDL_Renderer **renderer)
 	SDL_ERROR_IF(TTF_Init() < 0, "TTF could not initialize.");
 
 	*window = SDL_CreateWindow(SCREEN_TITLE, SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT,SDL_WINDOW_SHOWN);
+		SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
 	SDL_ERROR_IF(*window == NULL, "Window could not be created.");
 
 	*renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
@@ -62,7 +62,7 @@ void draw_fps(SDL_Renderer *renderer, size_t fps)
 	SDL_Surface *surface = TTF_RenderText_Blended(font_fps, text, COLOR_GREEN);
 	TTF_ERROR_IF(surface == NULL, "TTF surface could not be created.");
 
-	SDL_Rect dstrect = {SCREEN_WIDTH-surface->w-5, 0, surface->w, surface->h};
+	SDL_Rect dstrect = {WIDTH - surface->w - 5, 0, surface->w, surface->h};
 
 	SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
 	SDL_ERROR_IF(texture == NULL, "TTF texture could not be created.");

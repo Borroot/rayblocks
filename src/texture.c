@@ -10,8 +10,9 @@
 
 /* texture files for the floor and the ceiling */
 const char *floorceilnames[] = {
-	FLOORCEIL "Hexbrown1.bmp", FLOORCEIL "Hexbrown2.bmp",
-	FLOORCEIL "Hexbrown3.bmp", FLOORCEIL "Woodherring2.bmp"};
+	FLOORCEIL "Hexbrown1.bmp",    FLOORCEIL "Hexbrown2.bmp",
+	FLOORCEIL "Hexbrown3.bmp",    FLOORCEIL "Woodherring1.bmp",
+	FLOORCEIL "Woodherring2.bmp"};
 
 /* texture files for the walls */
 const char *wallnames[] = {

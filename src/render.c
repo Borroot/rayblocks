@@ -20,9 +20,36 @@ uint32_t *floor_pixels;
 SDL_Texture *ceil_texture;
 uint32_t *ceil_pixels;
 
+static void render_init_floorceil(SDL_Renderer *renderer,
+		SDL_Texture **texture, uint32_t **pixels)
+{
+	*texture = SDL_CreateTexture(renderer, PIXELFORMAT,
+		SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT / 2);
+	SDL_ERROR_IF(*texture == NULL, "Could not create texture.");
+
+	int result = SDL_SetTextureBlendMode(*texture, SDL_BLENDMODE_BLEND);
+	SDL_ERROR_IF(result < 0, "Could not set blend mode for texture.");
+
+	size_t len = WIDTH * (HEIGHT / 2 + 1) * sizeof(**pixels);
+	*pixels = malloc(len);
+	ERROR_IF(*pixels == NULL, "Could not malloc pixels array.");
+}
+
+void render_init(SDL_Renderer *renderer)
+{
+	render_init_floorceil(renderer, &floor_texture, &floor_pixels);
+	render_init_floorceil(renderer, &ceil_texture, &ceil_pixels);
+}
+
+void render_quit()
+{
+	SDL_DestroyTexture(floor_texture);
+	free(floor_pixels);
+}
+
 static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 {
-	float camera_x = 2 * x / (double)SCREEN_WIDTH - 1;  /* x-coord on plane */
+	float camera_x = 2 * x / (double)WIDTH - 1;  /* x-coord on plane */
 	PointF ray = {state->dir.x + state->plane.x * camera_x,
 		state->dir.y + state->plane.y * camera_x};  /* ray direction */
 
@@ -42,8 +69,8 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 
 	/* calculate the texture and screen coordinates where to draw */
 	int texture_x = (int)(wall_hit * (float)texture->w);
-	int line_height = (int)(SCREEN_HEIGHT / wall_dst);
-	int line_top = SCREEN_HEIGHT / 2 - line_height / 2;
+	int line_height = (int)(HEIGHT / wall_dst);
+	int line_top = HEIGHT / 2 - line_height / 2;
 
 	/* draw the texture on the screen at the correct place */
 	SDL_Rect srcrect = {texture_x, 0, 1, texture->h};
@@ -63,16 +90,16 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 	int line_end = line_top + line_height + 1;
 
 	/* make all pixels behind the walls opague */
-	for (int y = SCREEN_HEIGHT / 2 + 1; y < MIN(line_end,SCREEN_HEIGHT); y++)
-		floor_pixels[SCREEN_WIDTH * (y - SCREEN_HEIGHT / 2 - 1) + x] = 0;
+	for (int y = HEIGHT / 2 + 1; y < MIN(line_end, HEIGHT); y++)
+		floor_pixels[WIDTH * (y - HEIGHT / 2 - 1) + x] = 0;
 
-	for (int y = MAX(0, line_top); y < SCREEN_HEIGHT / 2; y++)
-		ceil_pixels[SCREEN_WIDTH * y + x] = 0;
+	for (int y = MAX(0, line_top); y < HEIGHT / 2; y++)
+		ceil_pixels[WIDTH * y + x] = 0;
 
 	/* draw the floor pixels per y value starting from where the wall stops */
-	for (size_t y = line_end; y < SCREEN_HEIGHT + 1; y++)
+	for (size_t y = line_end; y < HEIGHT + 1; y++)
 	{
-		float current_dst = SCREEN_HEIGHT / (2.0 * y - SCREEN_HEIGHT);
+		float current_dst = HEIGHT / (2.0 * y - HEIGHT);
 		float weight = current_dst / wall_dst;
 
 		/* calculate the exact floor position which needs be drawn */
@@ -81,25 +108,31 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 
 		/* retrieve the texture from the floor tile we are currently drawing */
 		size_t index = state->level->w * (int)floor.y + (int)floor.x;
-		size_t texnum = state->level->map_floor[index] - 1;
-		Texture *texture = &texture_floorceil[texnum];
+		size_t texnum = state->level->map_floor[index];
 
-		/* calculate the texture pixel (texel) which is to be drawn at (x,y) */
-		PointI texel = {(int)(floor.x * texture->w) % texture->w,
-			            (int)(floor.y * texture->h) % texture->h};
+		floor.x = floor.x - (int)floor.x;  /* only leave the decimals */
+		floor.y = floor.y - (int)floor.y;  /* only leave the decimals */
 
-		int drawy = y - SCREEN_HEIGHT / 2 - 1;  /* y pos in pixel array */
+		int drawy = y - HEIGHT / 2 - 1;  /* y pos in floor pixel array */
 
-		/* update the pixel in the pixel array to the pixel from the texture */
-		floor_pixels[SCREEN_WIDTH * drawy + x] =
-			((uint32_t*)texture->surf->pixels)[texture->w * texel.y + texel.x];
-
-		texnum = state->level->map_ceiling[index];
-		if (texnum == 0)
-			ceil_pixels[SCREEN_WIDTH * (SCREEN_HEIGHT / 2 - drawy) + x] = 0;
+		/* update the floor pixel to the pixel from the correct texture */
+		if (texnum == 0)  /* no texture */
+			floor_pixels[WIDTH * drawy + x] = 0;
 		else {
-			texture = &texture_floorceil[texnum] - 1;
-			ceil_pixels[SCREEN_WIDTH * (SCREEN_HEIGHT / 2 - drawy) + x] =
+			Texture *texture = &texture_floorceil[texnum - 1];
+			PointI texel={(int)(floor.x*texture->w),(int)(floor.y*texture->h)};
+			floor_pixels[WIDTH * drawy + x] =
+				((uint32_t*)texture->surf->pixels)[texture->w*texel.y+texel.x];
+		}
+
+		/* update the ceiling pixel to the pixel from the correct texture */
+		texnum = state->level->map_ceiling[index];
+		if (texnum == 0)  /* no texture */
+			ceil_pixels[WIDTH * (HEIGHT / 2 - drawy) + x] = 0;
+		else {
+			texture = &texture_floorceil[texnum - 1];
+			PointI texel={(int)(floor.x*texture->w),(int)(floor.y*texture->h)};
+			ceil_pixels[WIDTH * (HEIGHT / 2 - drawy) + x] =
 				((uint32_t*)texture->surf->pixels)[texture->w*texel.y+texel.x];
 		}
 	}
@@ -107,19 +140,20 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 
 static void render_wall_and_floor(SDL_Renderer *renderer, State *state)
 {
-	for (size_t x = 0; x < SCREEN_WIDTH; x++)
+	for (size_t x = 0; x < WIDTH; x++)
 		render_line(renderer, state, x);  /* update every vertical line */
 
 	/* push updates for floor and ceiling to the screen from pixel arrays */
-	SDL_UpdateTexture(floor_texture, NULL, floor_pixels, SCREEN_WIDTH *
-		sizeof(*floor_pixels));
-	SDL_UpdateTexture(ceil_texture, NULL, ceil_pixels, SCREEN_WIDTH *
-		sizeof(*ceil_pixels));
+	size_t pitch1 = WIDTH * sizeof(*floor_pixels);
+	size_t pitch2 = WIDTH * sizeof(*ceil_pixels);
 
-	SDL_Rect dstrect1 = {0, SCREEN_HEIGHT/2, SCREEN_WIDTH, SCREEN_HEIGHT/2};
+	SDL_UpdateTexture(floor_texture, NULL, floor_pixels, pitch1);
+	SDL_UpdateTexture(ceil_texture, NULL, ceil_pixels, pitch2);
+
+	SDL_Rect dstrect1 = {0, HEIGHT / 2, WIDTH, HEIGHT / 2};
+	SDL_Rect dstrect2 = {0, 0, WIDTH, HEIGHT / 2};
+
 	SDL_RenderCopy(renderer, floor_texture, NULL, &dstrect1);
-
-	SDL_Rect dstrect2 = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT / 2};
 	SDL_RenderCopy(renderer, ceil_texture, NULL, &dstrect2);
 }
 
@@ -127,29 +161,29 @@ static void render_sky(SDL_Renderer *renderer, State *state)
 {
 	Texture *texture = &texture_sky;
 
-	size_t texture_width = (2 * texture->h * SCREEN_WIDTH) / SCREEN_HEIGHT;
-	ERROR_IF(texture_width > texture->w, "Sky texture not wide enough.");
+	size_t texture_width = (2 * texture->h * WIDTH) / HEIGHT;
+	ERROR_IF(texture_width > texture->w, "Sky texture is not wide enough.");
 
 	float angle = 2 * M_PI - (atan2f(state->dir.x, state->dir.y) + M_PI);
 	size_t offset = angle / (2 * M_PI) * texture->w;  /* offset in texture */
 
 	if (offset + texture_width < texture->w) {
 		SDL_Rect srcrect = {offset, 0, texture_width, texture->h};
-		SDL_Rect dstrect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT / 2};
+		SDL_Rect dstrect = {0, 0, WIDTH, HEIGHT / 2};
 		SDL_RenderCopy(renderer, texture->img, &srcrect, &dstrect);
 	} else {  /* the texture needs to wrap around */
 		size_t width1 = texture->w - offset;
 		size_t width2 = texture_width - width1;
 
-		size_t screen_width1 = width1/(float)texture_width * SCREEN_WIDTH;
-		size_t screen_width2 = width2/(float)texture_width * SCREEN_WIDTH + 1;
+		size_t screen_width1 = width1/(float)texture_width * WIDTH;
+		size_t screen_width2 = width2/(float)texture_width * WIDTH + 1;
 
 		SDL_Rect srcrect1 = {offset, 0, width1, texture->h};
-		SDL_Rect dstrect1 = {0, 0, screen_width1, SCREEN_HEIGHT/2};
+		SDL_Rect dstrect1 = {0, 0, screen_width1, HEIGHT / 2};
 		SDL_RenderCopy(renderer, texture->img, &srcrect1, &dstrect1);
 
 		SDL_Rect srcrect2 = {0, 0, width2, texture->h};
-		SDL_Rect dstrect2 = {screen_width1, 0, screen_width2, SCREEN_HEIGHT/2};
+		SDL_Rect dstrect2 = {screen_width1, 0, screen_width2, HEIGHT / 2};
 		SDL_RenderCopy(renderer, texture->img, &srcrect2, &dstrect2);
 	}
 }
@@ -158,31 +192,4 @@ void render(SDL_Renderer *renderer, State *state)
 {
 	render_sky(renderer, state);
 	render_wall_and_floor(renderer, state);
-}
-
-static void render_init_floorceil(SDL_Renderer *renderer,
-		SDL_Texture **texture, uint32_t **pixels)
-{
-	*texture = SDL_CreateTexture(renderer, PIXELFORMAT,
-		SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
-	SDL_ERROR_IF(*texture == NULL, "Could not create texture.");
-
-	int result = SDL_SetTextureBlendMode(*texture, SDL_BLENDMODE_BLEND);
-	SDL_ERROR_IF(result < 0, "Could not set blend mode for texture.");
-
-	size_t len = SCREEN_WIDTH * (SCREEN_HEIGHT/2 + 1) * sizeof(**pixels);
-	*pixels = malloc(len);
-	ERROR_IF(*pixels == NULL, "Could not malloc pixels array.");
-}
-
-void render_init(SDL_Renderer *renderer)
-{
-	render_init_floorceil(renderer, &floor_texture, &floor_pixels);
-	render_init_floorceil(renderer, &ceil_texture, &ceil_pixels);
-}
-
-void render_quit()
-{
-	SDL_DestroyTexture(floor_texture);
-	free(floor_pixels);
 }
