@@ -14,6 +14,7 @@ const char *wallnames[] = {
 	WALLS "TilesL.bmp",         WALLS "TilesD.bmp",
 	WALLS "MultibrickL.bmp",    WALLS "MultibrickD.bmp",
 	WALLS "BrownbrickL.bmp",    WALLS "BrownbrickD.bmp",
+	WALLS "BookshelfL.bmp",     WALLS "BookshelfD.bmp",
 	WALLS "StoneUWHitlerL.bmp", WALLS "StoneUWHitlerD.bmp"};
 
 /* texture files for the floors */
