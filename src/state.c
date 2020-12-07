@@ -24,7 +24,6 @@ State *state_init(Level *level)
 
 void state_quit(State *state)
 {
-	free(state->level->map);
-	free(state->level);
+	level_quit(state->level);
 	free(state);
 }

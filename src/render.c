@@ -27,9 +27,10 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 	int side;  /* what side was hit of the wall x = 0 or y = 1 */
 	float wall_dst = collide_ray(state, &ray, &cell, &side);  /* perp dist */
 
-	size_t index = (state->level->map[state->level->w * cell.y + cell.x]-1)*2;
-	if (!side) index++;  /* choose dark texture variant */
-	Texture *texture = &texture_walls[index];
+	size_t index = state->level->w * cell.y + cell.x;
+	size_t texnum = (state->level->map_walls[index] - 1) * 2;
+	if (!side) texnum++;  /* choose dark texture variant */
+	Texture *texture = &texture_walls[texnum];
 
 	float wall_hit;  /* coordinate at which the wall is hit */
 	if (side) wall_hit = state->pos.x + wall_dst * ray.x;
@@ -48,7 +49,6 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 
 	/* render everything below this wall as floor */
 	PointF floorwall;  /* the floor below the wall which was hit */
-
 	if (side) {
 		floorwall.x = cell.x + wall_hit;
 		floorwall.y = cell.y + (ray.y < 0 ? 1.0 : 0);
@@ -69,19 +69,36 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 		float current_dst = SCREEN_HEIGHT / (2.0 * y - SCREEN_HEIGHT);
 		float weight = current_dst / wall_dst;
 
+		/* calculate the exact floor position which needs be drawn */
 		PointF floor = {weight * floorwall.x + (1.0 - weight) * state->pos.x,
 			            weight * floorwall.y + (1.0 - weight) * state->pos.y};
 
-		size_t index = abs(state->level->map[state->level->w * (int)floor.y +
-			(int)floor.x]);
-		Texture *texture = &texture_floors[index];
+		/* retrieve the texture from the floor tile we are currently drawing */
+		size_t index = state->level->w * (int)floor.y + (int)floor.x;
+		size_t texnum = state->level->map_floor[index];
+		Texture *texture = &texture_floors[texnum];
 
+		/* calculate the texture pixel (texel) which is to be drawn at (x,y) */
 		PointI texel = {(int)(floor.x * texture->w) % texture->w,
 			            (int)(floor.y * texture->h) % texture->h};
 
+		/* update the pixel in the pixel array to the pixel from the texture */
 		floor_pixels[SCREEN_WIDTH * (y - SCREEN_HEIGHT / 2 - 1) + x] =
 			((uint32_t*)texture->surf->pixels)[texture->w * texel.y + texel.x];
 	}
+}
+
+static void render_wall_and_floor(SDL_Renderer *renderer, State *state)
+{
+	for (size_t x = 0; x < SCREEN_WIDTH; x++)
+		render_line(renderer, state, x);  /* update every vertical line */
+
+	/* push the updates for the floor to the screen from the pixel array */
+	SDL_UpdateTexture(floor_texture, NULL, floor_pixels, SCREEN_WIDTH *
+		sizeof(*floor_pixels));
+
+	SDL_Rect dstrect = {0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2};
+	SDL_RenderCopy(renderer, floor_texture, NULL, &dstrect);
 }
 
 static void render_sky(SDL_Renderer *renderer, State *state)
@@ -118,16 +135,7 @@ static void render_sky(SDL_Renderer *renderer, State *state)
 void render(SDL_Renderer *renderer, State *state)
 {
 	render_sky(renderer, state);
-
-	for (size_t x = 0; x < SCREEN_WIDTH; x++)
-		render_line(renderer, state, x);
-
-	/* push the updates for the floor */
-	SDL_UpdateTexture(floor_texture, NULL, floor_pixels, SCREEN_WIDTH *
-		sizeof(*floor_pixels));
-
-	SDL_Rect dstrect = {0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2};
-	SDL_RenderCopy(renderer, floor_texture, NULL, &dstrect);
+	render_wall_and_floor(renderer, state);
 }
 
 void render_init(SDL_Renderer *renderer)

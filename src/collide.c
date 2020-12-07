@@ -19,7 +19,7 @@ static int dda(State *state, PointF *side_dst, PointF *delt_dst, PointI *step,
 			cell->y += step->y;
 			side = 1;
 		}
-		if (state->level->map[state->level->w * cell->y + cell->x] > 0)
+		if (state->level->map_obstacles[state->level->w*cell->y+cell->x] > 0)
 			hit = 1;
 	}
 	return side;
@@ -46,7 +46,8 @@ int collide_radius(State *state, PointF *pos, float radius)
 	for (int dy = -1; dy <= 1; dy++) {
 		for (int dx = -1; dx <= 1; dx++) {
 			PointI newpos = {pos->x + dx * radius, pos->y + dy * radius};
-			if (state->level->map[state->level->w * newpos.y + newpos.x] > 0)
+			size_t index = state->level->w * newpos.y + newpos.x;
+			if (state->level->map_obstacles[index] > 0)
 				return 1;
 		}
 	}
