@@ -17,7 +17,7 @@
 SDL_Texture *floor_texture;
 uint32_t *floor_pixels;
 
-static void render_line_wall(SDL_Renderer *renderer, State *state, size_t x)
+static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 {
 	float camera_x = 2 * x / (double)SCREEN_WIDTH - 1;  /* x-coord on plane */
 	PointF ray = {state->dir.x + state->plane.x * camera_x,
@@ -34,59 +34,54 @@ static void render_line_wall(SDL_Renderer *renderer, State *state, size_t x)
 	float wall_hit;  /* coordinate at which the wall is hit */
 	if (side) wall_hit = state->pos.x + wall_dst * ray.x;
 	else      wall_hit = state->pos.y + wall_dst * ray.y;
+	wall_hit -= (int)wall_hit;
 
-	int texture_x = (int)((wall_hit - (int)wall_hit) * (float)texture->w);
+	/* calculate the texture and screen coordinates where to draw */
+	int texture_x = (int)(wall_hit * (float)texture->w);
 	int line_height = (int)(SCREEN_HEIGHT / wall_dst);
 	int line_top = SCREEN_HEIGHT / 2 - line_height / 2;
 
+	/* draw the texture on the screen at the correct place */
 	SDL_Rect srcrect = {texture_x, 0, 1, texture->h};
 	SDL_Rect dstrect = {x, line_top, 1, line_height};
 	SDL_RenderCopy(renderer, texture->img, &srcrect, &dstrect);
-}
 
-static void render_line_floor(SDL_Renderer *renderer, State *state, size_t y)
-{
-	/* create the left and right most rays */
-	PointF rayl = {state->dir.x-state->plane.x, state->dir.y-state->plane.y};
-	PointF rayr = {state->dir.x+state->plane.x, state->dir.y+state->plane.y};
+	/* render everything below this wall as floor */
+	PointF floorwall;  /* the floor below the wall which was hit */
 
-	int p = y - SCREEN_HEIGHT / 2;  /* height distance from ray to horizon */
-	float posz = SCREEN_HEIGHT / 2.f;  /* height of the camera */
-	float dst = posz / p;  /* horizontal distance to the floor */
+	if (side) {
+		floorwall.x = cell.x + wall_hit;
+		floorwall.y = cell.y + (ray.y < 0 ? 1.0 : 0);
+	} else {
+		floorwall.x = cell.x + (ray.x < 0 ? 1.0 : 0);
+		floorwall.y = cell.y + wall_hit;
+	}
 
-	/* create the stepping vector which will increase the floor vector */
-	PointF step = {dst * (rayr.x - rayl.x) / SCREEN_WIDTH,
-		dst * (rayr.y - rayl.y) / SCREEN_WIDTH};
-	PointF floor = {state->pos.x + dst * rayl.x, state->pos.y + dst * rayl.y};
+	int line_end = line_top + line_height + 1;
 
-	/* writing every single pixel is extremely slow (not accelerated by gpu) */
-	for (size_t x = 0; x < SCREEN_WIDTH; x++) {
-		PointI cell = {floor.x, floor.y};
+	/* make all pixels behind the walls opague */
+	for (int y = SCREEN_HEIGHT / 2 + 1; y < MIN(line_end,SCREEN_HEIGHT); y++)
+		floor_pixels[SCREEN_WIDTH * (y - SCREEN_HEIGHT / 2 - 1) + x] = 0;
 
-		Texture *texture = &texture_floors[0];
-		PointI texel={texture->w*(floor.x-cell.x),texture->h*(floor.y-cell.y)};
+	/* draw the floor pixels per y value starting from where the wall stops */
+	for (size_t y = line_end; y < SCREEN_HEIGHT; y++)
+	{
+		float current_dst = SCREEN_HEIGHT / (2.0 * y - SCREEN_HEIGHT);
+		float weight = current_dst / wall_dst;
 
-		floor.x += step.x;
-		floor.y += step.y;
+		PointF floor = {weight * floorwall.x + (1.0 - weight) * state->pos.x,
+			            weight * floorwall.y + (1.0 - weight) * state->pos.y};
 
-		texel.x = MAX(0, texel.x);
-		texel.y = MAX(0, texel.y);
+		size_t index = abs(state->level->map[state->level->w * (int)floor.y +
+			(int)floor.x]);
+		Texture *texture = &texture_floors[index];
+
+		PointI texel = {(int)(floor.x * texture->w) % texture->w,
+			            (int)(floor.y * texture->h) % texture->h};
 
 		floor_pixels[SCREEN_WIDTH * (y - SCREEN_HEIGHT / 2 - 1) + x] =
 			((uint32_t*)texture->surf->pixels)[texture->w * texel.y + texel.x];
 	}
-}
-
-static void render_floor(SDL_Renderer *renderer, State *state)
-{
-	for (size_t y = SCREEN_HEIGHT / 2 + 1; y <= SCREEN_HEIGHT; y++)
-		render_line_floor(renderer, state, y);
-
-	SDL_UpdateTexture(floor_texture, NULL, floor_pixels, SCREEN_WIDTH *
-		sizeof(*floor_pixels));
-
-	SDL_Rect dstrect = {0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2};
-	SDL_RenderCopy(renderer, floor_texture, NULL, &dstrect);
 }
 
 static void render_sky(SDL_Renderer *renderer, State *state)
@@ -107,8 +102,8 @@ static void render_sky(SDL_Renderer *renderer, State *state)
 		size_t width1 = texture->w - offset;
 		size_t width2 = texture_width - width1;
 
-		size_t screen_width1 = width1 / (float)texture_width * SCREEN_WIDTH;
-		size_t screen_width2 = width2 / (float)texture_width * SCREEN_WIDTH;
+		size_t screen_width1 = width1/(float)texture_width * SCREEN_WIDTH;
+		size_t screen_width2 = width2/(float)texture_width * SCREEN_WIDTH + 1;
 
 		SDL_Rect srcrect1 = {offset, 0, width1, texture->h};
 		SDL_Rect dstrect1 = {0, 0, screen_width1, SCREEN_HEIGHT/2};
@@ -123,10 +118,16 @@ static void render_sky(SDL_Renderer *renderer, State *state)
 void render(SDL_Renderer *renderer, State *state)
 {
 	render_sky(renderer, state);
-	render_floor(renderer, state);
 
 	for (size_t x = 0; x < SCREEN_WIDTH; x++)
-		render_line_wall(renderer, state, x);
+		render_line(renderer, state, x);
+
+	/* push the updates for the floor */
+	SDL_UpdateTexture(floor_texture, NULL, floor_pixels, SCREEN_WIDTH *
+		sizeof(*floor_pixels));
+
+	SDL_Rect dstrect = {0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2};
+	SDL_RenderCopy(renderer, floor_texture, NULL, &dstrect);
 }
 
 void render_init(SDL_Renderer *renderer)
@@ -135,8 +136,11 @@ void render_init(SDL_Renderer *renderer)
 		SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
 	SDL_ERROR_IF(floor_texture == NULL, "Could not create floor_texture.");
 
-	floor_pixels = malloc(SCREEN_WIDTH * (SCREEN_HEIGHT / 2 + 1) *
-		sizeof(*floor_pixels));
+	int result = SDL_SetTextureBlendMode(floor_texture, SDL_BLENDMODE_BLEND);
+	SDL_ERROR_IF(result < 0, "Could not set blend mode for floor_texture.");
+
+	size_t len = SCREEN_WIDTH * (SCREEN_HEIGHT/2 + 1) * sizeof(*floor_pixels);
+	floor_pixels = malloc(len);
 	ERROR_IF(floor_pixels == NULL, "Could not malloc floor_pixels array.");
 }
 
