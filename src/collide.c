@@ -19,7 +19,7 @@ static int dda(State *state, PointF *side_dst, PointF *delt_dst, PointI *step,
 			cell->y += step->y;
 			side = 1;
 		}
-		if (state->level->map_obstacles[state->level->w*cell->y+cell->x] > 0)
+		if (state->level->map_walls[state->level->w*cell->y+cell->x] > 0)
 			hit = 1;
 	}
 	return side;
