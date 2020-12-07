@@ -2,8 +2,8 @@
 #define CONFIG_H_
 
 #define SCREEN_TITLE  "Rayblocks"
-#define SCREEN_WIDTH  1280
-#define SCREEN_HEIGHT 960
+#define SCREEN_WIDTH  640 //1280
+#define SCREEN_HEIGHT 480 //960
 
 #define FOV 90  /* field of view of the player */
 #define PLAYER_RADIUS 0.25  /* collision radius of the player */

@@ -8,6 +8,11 @@
 #define WALLS     FOLDER "walls/"
 #define FLOORCEIL FOLDER "floorceil/"
 
+/* texture files for the floor and the ceiling */
+const char *floorceilnames[] = {
+	FLOORCEIL "Hexbrown1.bmp", FLOORCEIL "Hexbrown2.bmp",
+	FLOORCEIL "Hexbrown3.bmp", FLOORCEIL "Woodherring2.bmp"};
+
 /* texture files for the walls */
 const char *wallnames[] = {
 	WALLS "Stone1L.bmp",        WALLS "Stone1D.bmp",
@@ -16,11 +21,6 @@ const char *wallnames[] = {
 	WALLS "BrownbrickL.bmp",    WALLS "BrownbrickD.bmp",
 	WALLS "BookshelfL.bmp",     WALLS "BookshelfD.bmp",
 	WALLS "StoneUWHitlerL.bmp", WALLS "StoneUWHitlerD.bmp"};
-
-/* texture files for the floor and the ceiling */
-const char *floorceilnames[] = {
-	FLOORCEIL "Hexbrown1.bmp", FLOORCEIL "Hexbrown2.bmp",
-	FLOORCEIL "Hexbrown3.bmp", FLOORCEIL "Woodherring2.bmp"};
 
 Texture texture_sky;
 Texture texture_walls[sizeof(wallnames) / sizeof(*wallnames)];

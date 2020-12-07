@@ -70,7 +70,7 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 		ceil_pixels[SCREEN_WIDTH * y + x] = 0;
 
 	/* draw the floor pixels per y value starting from where the wall stops */
-	for (size_t y = line_end; y < SCREEN_HEIGHT; y++)
+	for (size_t y = line_end; y < SCREEN_HEIGHT + 1; y++)
 	{
 		float current_dst = SCREEN_HEIGHT / (2.0 * y - SCREEN_HEIGHT);
 		float weight = current_dst / wall_dst;
