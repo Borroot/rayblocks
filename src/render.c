@@ -30,8 +30,7 @@ static void render_init_floorceil(SDL_Renderer *renderer,
 	int result = SDL_SetTextureBlendMode(*texture, SDL_BLENDMODE_BLEND);
 	SDL_ERROR_IF(result < 0, "Could not set blend mode for texture.");
 
-	size_t len = WIDTH * (HEIGHT / 2 + 1) * sizeof(**pixels);
-	*pixels = malloc(len);
+	*pixels = malloc(WIDTH * (HEIGHT / 2 + 1) * sizeof(**pixels));
 	ERROR_IF(*pixels == NULL, "Could not malloc pixels array.");
 }
 
@@ -72,7 +71,7 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 	int line_height = (int)(HEIGHT / wall_dst);
 	int line_top = HEIGHT / 2 - line_height / 2;
 
-	/* draw the texture on the screen at the correct place */
+	/* draw the wall texture on the screen at the correct place */
 	SDL_Rect srcrect = {texture_x, 0, 1, texture->h};
 	SDL_Rect dstrect = {x, line_top, 1, line_height};
 	SDL_RenderCopy(renderer, texture->img, &srcrect, &dstrect);
@@ -89,14 +88,15 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 
 	int line_end = line_top + line_height + 1;
 
-	/* make all pixels behind the walls opague */
+	/* make all floor pixels behind the walls opague */
 	for (int y = HEIGHT / 2 + 1; y < MIN(line_end, HEIGHT); y++)
 		floor_pixels[WIDTH * (y - HEIGHT / 2 - 1) + x] = 0;
 
+	/* make all ceiling pixels behind the walls opague */
 	for (int y = MAX(0, line_top); y < HEIGHT / 2; y++)
 		ceil_pixels[WIDTH * y + x] = 0;
 
-	/* draw the floor pixels per y value starting from where the wall stops */
+	/* draw the ceiling and floor pixels step by step on the screen */
 	for (size_t y = line_end; y < HEIGHT + 1; y++)
 	{
 		float current_dst = HEIGHT / (2.0 * y - HEIGHT);
@@ -167,7 +167,7 @@ static void render_sky(SDL_Renderer *renderer, State *state)
 	float angle = 2 * M_PI - (atan2f(state->dir.x, state->dir.y) + M_PI);
 	size_t offset = angle / (2 * M_PI) * texture->w;  /* offset in texture */
 
-	if (offset + texture_width < texture->w) {
+	if (offset + texture_width < texture->w) {  /* no cycling is needed */
 		SDL_Rect srcrect = {offset, 0, texture_width, texture->h};
 		SDL_Rect dstrect = {0, 0, WIDTH, HEIGHT / 2};
 		SDL_RenderCopy(renderer, texture->img, &srcrect, &dstrect);
