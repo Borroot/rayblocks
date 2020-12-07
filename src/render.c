@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include "config.h"
 #include "collide.h"
 #include "color.h"
@@ -30,8 +31,10 @@ static void render_init_floorceil(SDL_Renderer *renderer,
 	int result = SDL_SetTextureBlendMode(*texture, SDL_BLENDMODE_BLEND);
 	SDL_ERROR_IF(result < 0, "Could not set blend mode for texture.");
 
-	*pixels = malloc(WIDTH * (HEIGHT / 2 + 1) * sizeof(**pixels));
+	size_t len = WIDTH * (HEIGHT / 2 + 1) * sizeof(**pixels);
+	*pixels = malloc(len);
 	ERROR_IF(*pixels == NULL, "Could not malloc pixels array.");
+	memset(*pixels, 0, len);
 }
 
 void render_init(SDL_Renderer *renderer)
