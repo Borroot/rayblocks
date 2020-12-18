@@ -10,6 +10,7 @@
 #include "debug.h"
 #include "point.h"
 #include "state.h"
+#include "sprite.h"
 #include "texture.h"
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
@@ -20,6 +21,8 @@ uint32_t *floor_pixels;
 
 SDL_Texture *ceil_texture;
 uint32_t *ceil_pixels;
+
+int *sprite_dst;
 
 static void render_init_floorceil(SDL_Renderer *renderer,
 		SDL_Texture **texture, uint32_t **pixels)
@@ -49,7 +52,7 @@ void render_quit()
 	free(floor_pixels);
 }
 
-static void render_line(SDL_Renderer *renderer, State *state, size_t x)
+static float render_line(SDL_Renderer *renderer, State *state, size_t x)
 {
 	float camera_x = 2 * x / (double)WIDTH - 1;  /* x-coord on plane */
 	PointF ray = {state->dir.x + state->plane.x * camera_x,
@@ -116,7 +119,6 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 		floor.x = floor.x - (int)floor.x;  /* only leave the decimals */
 		floor.y = floor.y - (int)floor.y;  /* only leave the decimals */
 
-		/* FIXME Try making this logic simpler. */
 		int drawy = y - HEIGHT / 2 - 1;  /* y pos in floor pixel array */
 
 		/* update the floor pixel to the pixel from the correct texture */
@@ -140,12 +142,78 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 				((uint32_t*)texture->surf->pixels)[texture->w*texel.y+texel.x];
 		}
 	}
+	return wall_dst;  /* perp dst */
+}
+
+static int compar(const void *a, const void *b)
+{
+	return sprite_dst[*((size_t *)b)] - sprite_dst[*((size_t *)a)];
+}
+
+static void render_sprites(SDL_Renderer *renderer, State *state,
+		float *zbuffer)
+{
+	size_t numsprites = state->level->numsprites;  /* abbreviation */
+	Sprite *sprites = state->level->sprites;       /* abbreviation */
+
+	/* determine the order to paint the sprites (painter's algorithm) */
+	size_t *sprite_order = malloc(numsprites * sizeof(size_t));
+	sprite_dst = malloc(numsprites * sizeof(int));
+
+	for (size_t i = 0; i < numsprites; i++) {
+		sprite_order[i] = i;
+		sprite_dst[i] =
+			(state->pos.x - sprites[i].x) * (state->pos.x - sprites[i].x) +
+			(state->pos.y - sprites[i].y) * (state->pos.y - sprites[i].y);
+	}
+	qsort(sprite_order, numsprites, sizeof(size_t), compar);  /* sort them */
+
+	for (size_t i = 0; i < numsprites; i++) {
+		/* translate sprite position relative to the player */
+		PointF sprite = {sprites[sprite_order[i]].x - state->pos.x,
+		                 sprites[sprite_order[i]].y - state->pos.y};
+
+		/* transform sprite with the inverse camera matrix */
+		float invdet = 1.0 /
+			(state->plane.x * state->dir.y - state->plane.y * state->dir.x);
+
+		/* calculate the transformation values */
+		float tx = invdet*( state->dir.y  *sprite.x - state->dir.x  *sprite.y);
+		float ty = invdet*(-state->plane.y*sprite.x + state->plane.x*sprite.y);
+
+		/* calculate the x value of the middle of the sprite on the screen */
+		int sprite_screenx = (WIDTH / 2) * (1 + tx / ty);
+
+		int sprite_size = fabs(HEIGHT / ty);  /* height and width (same) */
+		int sprite_top = HEIGHT / 2 - sprite_size / 2;
+
+		int sprite_left  = -sprite_size / 2 + sprite_screenx;
+		int sprite_right =  sprite_size / 2 + sprite_screenx;
+
+		for (int x = sprite_left; x < sprite_right; x++) {
+			Texture *texture = sprites[sprite_order[i]].texture;
+			int texture_x = (x - (-sprite_size / 2 + sprite_screenx)) *
+				texture->w / sprite_size;
+
+			if (ty > 0 && x >= 0 && x < WIDTH && ty < zbuffer[x]) {
+				/* draw the sprite texture on the screen */
+				SDL_Rect srcrect = {texture_x, 0, 1, texture->h};
+				SDL_Rect dstrect = {x, sprite_top, 1, sprite_size};
+				SDL_RenderCopy(renderer, texture->img, &srcrect, &dstrect);
+			}
+		}
+	}
+
+	free(sprite_order);
+	free(sprite_dst);
 }
 
 static void render_wall_and_floor(SDL_Renderer *renderer, State *state)
 {
+	float zbuffer[WIDTH];  /* zbuffer stores wall distances */
+
 	for (size_t x = 0; x < WIDTH; x++)
-		render_line(renderer, state, x);  /* update every vertical line */
+		zbuffer[x] = render_line(renderer, state, x);  /* draw vertical line */
 
 	/* push updates for floor and ceiling to the screen from pixel arrays */
 	size_t pitch1 = WIDTH * sizeof(*floor_pixels);
@@ -159,6 +227,8 @@ static void render_wall_and_floor(SDL_Renderer *renderer, State *state)
 
 	SDL_RenderCopy(renderer, floor_texture, NULL, &dstrect1);
 	SDL_RenderCopy(renderer, ceil_texture, NULL, &dstrect2);
+
+	render_sprites(renderer, state, zbuffer);  /* draw all the sprites */
 }
 
 static void render_sky(SDL_Renderer *renderer, State *state)

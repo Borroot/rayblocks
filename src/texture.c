@@ -65,8 +65,10 @@ void texture_init(SDL_Renderer *renderer)
 	for (size_t i = 0; i < sizeof(floorceilnames)/sizeof(*floorceilnames); i++)
 		texture_init_one(renderer, floorceilnames[i], texture_floorceil+i, 1);
 
-	for (size_t i = 0; i < sizeof(spritenames) / sizeof(*spritenames); i++)
+	for (size_t i = 0; i < sizeof(spritenames) / sizeof(*spritenames); i++) {
 		texture_init_one(renderer, spritenames[i], texture_sprites + i, 0);
+		SDL_SetTextureBlendMode(texture_sprites[i].img, SDL_BLENDMODE_BLEND);
+	}
 }
 
 void texture_quit()
