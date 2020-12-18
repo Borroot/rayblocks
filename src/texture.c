@@ -21,9 +21,7 @@ const char *wallnames[] = {
 	WALLS "TilesL.bmp",         WALLS "TilesD.bmp",
 	WALLS "MultibrickL.bmp",    WALLS "MultibrickD.bmp",
 	WALLS "BrownbrickL.bmp",    WALLS "BrownbrickD.bmp",
-	WALLS "PangaL.bmp",         WALLS "PangaD.bmp",
-	WALLS "BookshelfL.bmp",     WALLS "BookshelfD.bmp",
-	WALLS "StoneUWHitlerL.bmp", WALLS "StoneUWHitlerD.bmp"};
+	WALLS "BookshelfL.bmp",     WALLS "BookshelfD.bmp"};
 
 /* texture files for the sprites */
 const char *spritenames[] = {
