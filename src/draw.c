@@ -4,6 +4,7 @@
 #include "debug.h"
 #include "draw.h"
 #include "font.h"
+#include "sprite.h"
 #include "texture.h"
 #include "render.h"
 

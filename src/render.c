@@ -116,6 +116,7 @@ static void render_line(SDL_Renderer *renderer, State *state, size_t x)
 		floor.x = floor.x - (int)floor.x;  /* only leave the decimals */
 		floor.y = floor.y - (int)floor.y;  /* only leave the decimals */
 
+		/* FIXME Try making this logic simpler. */
 		int drawy = y - HEIGHT / 2 - 1;  /* y pos in floor pixel array */
 
 		/* update the floor pixel to the pixel from the correct texture */

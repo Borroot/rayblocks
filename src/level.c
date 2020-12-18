@@ -3,6 +3,8 @@
 #include "debug.h"
 #include "level.h"
 #include "point.h"
+#include "sprite.h"
+#include "texture.h"
 
 void level_quit(Level *level)
 {
@@ -10,6 +12,8 @@ void level_quit(Level *level)
 	free(level->map_walls);
 	free(level->map_floor);
 	free(level->map_ceiling);
+	free(level->sprites);
+
 	free(level);
 }
 
@@ -36,6 +40,20 @@ static void skipline(FILE *file)
 	} while (c != '\n');
 }
 
+static void read_sprites(FILE *file, Level *level)
+{
+	fscanf(file, "%zu", &level->numsprites);
+	level->sprites = malloc(level->numsprites * sizeof(Sprite));
+
+	size_t texture_id;
+
+	for (size_t i = 0; i < level->numsprites; i++) {
+		fscanf(file, "%f %f %zu", &level->sprites[i].x, &level->sprites[i].y,
+			&texture_id);
+		level->sprites[i].texture = &texture_sprites[texture_id];
+	}
+}
+
 Level *level_load(const char *filename)
 {
 	FILE *file = fopen(filename, "r");
@@ -55,7 +73,9 @@ Level *level_load(const char *filename)
 	level->map_obstacles = read_map(file, width, height); skipline(file);
 	level->map_walls     = read_map(file, width, height); skipline(file);
 	level->map_floor     = read_map(file, width, height); skipline(file);
-	level->map_ceiling   = read_map(file, width, height);
+	level->map_ceiling   = read_map(file, width, height); skipline(file);
+
+	read_sprites(file, level);
 
 	fclose(file);
 

@@ -3,12 +3,16 @@
 
 #include <stddef.h>
 #include "point.h"
+#include "sprite.h"
 
 typedef struct {
 	int *map_obstacles;  /* map containing obstacle info */
 	int *map_walls;      /* map containing wall     textures info */
 	int *map_floor;      /* map containing floor    textures info */
 	int *map_ceiling;    /* map containing ceiling  textures info */
+
+	Sprite *sprites;    /* list of all sprites */
+	size_t numsprites;  /* number of sprites in sprites list */
 
 	size_t w;  /* width  of the map */
 	size_t h;  /* height of the map */
@@ -19,6 +23,5 @@ typedef struct {
 
 void   level_quit(Level *level);
 Level *level_load(const char *filename);
-Level *level_generate(size_t width, size_t height);
 
 #endif
